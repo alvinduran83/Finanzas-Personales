@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Mis Finanzas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<section id="auth" class="auth hidden">
+  <div class="card">
+    <h1 id="authTitle">Iniciar sesión</h1>
+    <p id="authSub">Entra para ver y gestionar tus cuentas.</p>
+    <div id="authForm">
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" autocomplete="email">
+      <label for="pass">Clave</label>
+      <input id="pass" type="password" autocomplete="current-password">
+      <div id="confirmBox" class="hidden">
+        <label for="pass2">Repetir clave</label>
+        <input id="pass2" type="password" autocomplete="new-password">
+      </div>
+      <div class="err" id="authErr" role="alert"></div>
+      <button class="btn full" id="authBtn">Entrar</button>
+    </div>
+    <p style="margin:18px 0 0;text-align:center">
+      <span id="toggleTxt">¿No tienes usuario?</span>
+      <button class="link" id="toggleBtn">Crear cuenta de acceso</button>
+    </p>
+  </div>
+</section>
+
+<main id="app" class="wrap hidden">
+  <header class="top">
+    <div><h1>Mis Finanzas</h1><span id="who"></span></div>
+    <button class="btn ghost sm" id="logout">Cerrar sesión</button>
+  </header>
+  <div class="card total">
+    <small>Saldo total en tus cuentas</small>
+    <strong id="total">0,00</strong>
+  </div>
+  <div class="bar">
+    <h2>Cuentas</h2>
+    <button class="btn" id="newAcc">Nueva cuenta</button>
+  </div>
+  <ul class="list" id="list"></ul>
+</main>
+
+<dialog id="dlg">
+  <h2 id="dlgTitle">Nueva cuenta</h2>
+  <label for="aName">Nombre</label>
+  <input id="aName" placeholder="Ej. Cuenta de Ahorro" maxlength="60">
+  <label for="aType">Tipo</label>
+  <select id="aType">
+    <option>Ahorro</option><option>Pagos</option><option>Inversiones</option>
+    <option>Efectivo</option><option>Tarjeta de crédito</option><option>Otra</option>
+  </select>
+  <label for="aBal">Saldo inicial</label>
+  <input id="aBal" type="number" step="0.01" value="0">
+  <div class="err" id="dlgErr" role="alert"></div>
+  <div class="dlgacts">
+    <button class="btn ghost" id="dlgCancel">Cancelar</button>
+    <button class="btn" id="dlgSave">Guardar cuenta</button>
+  </div>
+</dialog>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
