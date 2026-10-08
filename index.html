@@ -24,10 +24,20 @@
       <div class="err" id="authErr" role="alert"></div>
       <button class="btn full" id="authBtn">Entrar</button>
     </div>
-    <p style="margin:18px 0 0;text-align:center">
+    <p class="switch">
       <span id="toggleTxt">¿No tienes usuario?</span>
-      <button class="link" id="toggleBtn">Crear cuenta de acceso</button>
+      <button class="link" id="toggleBtn">Solicitar acceso</button>
     </p>
+  </div>
+</section>
+
+<section id="pending" class="auth hidden">
+  <div class="card">
+    <h1 id="pendTitle">Solicitud en revisión</h1>
+    <p id="pendMsg"></p>
+    <p class="muted" id="pendEmail"></p>
+    <button class="btn full" id="recheck">Comprobar de nuevo</button>
+    <button class="btn ghost full" id="pendLogout">Cerrar sesión</button>
   </div>
 </section>
 
@@ -36,15 +46,28 @@
     <div><h1>Mis Finanzas</h1><span id="who"></span></div>
     <button class="btn ghost sm" id="logout">Cerrar sesión</button>
   </header>
-  <div class="card total">
-    <small>Saldo total en tus cuentas</small>
-    <strong id="total">0,00</strong>
-  </div>
-  <div class="bar">
-    <h2>Cuentas</h2>
-    <button class="btn" id="newAcc">Nueva cuenta</button>
-  </div>
-  <ul class="list" id="list"></ul>
+
+  <nav class="tabs">
+    <button class="tab" id="tabCuentas" data-tab="cuentas">Cuentas</button>
+    <button class="tab hidden" id="tabUsuarios" data-tab="usuarios">Usuarios <span class="badge hidden" id="pendCount">0</span></button>
+  </nav>
+
+  <section id="viewCuentas">
+    <div class="card total">
+      <small>Saldo total en tus cuentas</small>
+      <strong id="total">0,00</strong>
+    </div>
+    <div class="bar">
+      <h2>Cuentas</h2>
+      <button class="btn" id="newAcc">Nueva cuenta</button>
+    </div>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section id="viewUsuarios" class="hidden">
+    <div class="bar"><h2>Usuarios</h2></div>
+    <ul class="list" id="usersList"></ul>
+  </section>
 </main>
 
 <dialog id="dlg">

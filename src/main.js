@@ -3,12 +3,17 @@ import { supabase } from './supabase.js'
 
 const $ = (id) => document.getElementById(id)
 const money = (n) => new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
-const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 const MSG_CONFIRMAR = 'Te enviamos un correo para confirmar tu cuenta. Confírmalo y luego inicia sesión.'
 
 let mode = 'login'
 let cuentas = []
+let usuarios = []
 let editId = null
+let perfil = null
+let yo = null
+
+const show = (name) => ['auth', 'pending', 'app'].forEach((id) => $(id).classList.toggle('hidden', id !== name))
 
 // ---------- Autenticación ----------
 function showAuthMsg(text, ok = false) {
@@ -19,12 +24,14 @@ function showAuthMsg(text, ok = false) {
 function setMode(m) {
   mode = m
   const reg = m === 'register'
-  $('authTitle').textContent = reg ? 'Crear acceso' : 'Iniciar sesión'
-  $('authSub').textContent = reg ? 'Usa tu correo y una clave de al menos 6 caracteres.' : 'Entra para ver y gestionar tus cuentas.'
-  $('authBtn').textContent = reg ? 'Crear acceso' : 'Entrar'
+  $('authTitle').textContent = reg ? 'Solicitar acceso' : 'Iniciar sesión'
+  $('authSub').textContent = reg
+    ? 'Usa tu correo y una clave de al menos 6 caracteres. Un administrador debe aprobar tu acceso.'
+    : 'Entra para ver y gestionar tus cuentas.'
+  $('authBtn').textContent = reg ? 'Solicitar acceso' : 'Entrar'
   $('confirmBox').classList.toggle('hidden', !reg)
   $('toggleTxt').textContent = reg ? '¿Ya tienes usuario?' : '¿No tienes usuario?'
-  $('toggleBtn').textContent = reg ? 'Iniciar sesión' : 'Crear cuenta de acceso'
+  $('toggleBtn').textContent = reg ? 'Iniciar sesión' : 'Solicitar acceso'
   $('pass').autocomplete = reg ? 'new-password' : 'current-password'
   showAuthMsg('')
 }
@@ -52,18 +59,75 @@ async function submitAuth() {
   }
 }
 
+function showPending(title, msg) {
+  $('pendTitle').textContent = title
+  $('pendMsg').textContent = msg
+  $('pendEmail').textContent = yo ? 'Cuenta: ' + yo.email : ''
+  show('pending')
+}
+
 async function onSession(session) {
-  const logged = !!session
-  $('auth').classList.toggle('hidden', logged)
-  $('app').classList.toggle('hidden', !logged)
-  if (logged) {
-    $('who').textContent = 'Sesión de ' + session.user.email
-    $('email').value = $('pass').value = $('pass2').value = ''
-    await cargarCuentas()
-  } else {
-    cuentas = []
+  if (!session) {
+    perfil = yo = null
+    cuentas = usuarios = []
+    show('auth')
     setMode('login')
+    return
   }
+  yo = session.user
+  $('email').value = $('pass').value = $('pass2').value = ''
+  const { data, error } = await supabase.from('perfiles').select('*').eq('id', yo.id).maybeSingle()
+  perfil = data
+  if (error || !perfil) return showPending('No pudimos verificar tu acceso', 'Intenta de nuevo en unos segundos o contacta al administrador.')
+  if (perfil.estado === 'pendiente')
+    return showPending('Solicitud en revisión', 'Tu cuenta fue creada y está pendiente de aprobación por un administrador. Vuelve más tarde.')
+  if (perfil.estado !== 'aprobado')
+    return showPending('Acceso deshabilitado', 'Tu acceso está deshabilitado. Contacta al administrador.')
+
+  const admin = perfil.rol === 'admin'
+  $('who').textContent = 'Sesión de ' + yo.email + (admin ? ' · Administrador' : '')
+  $('tabUsuarios').classList.toggle('hidden', !admin)
+  show('app')
+  setTab('cuentas')
+  await cargarCuentas()
+  if (admin) await cargarUsuarios()
+}
+
+function setTab(t) {
+  $('viewCuentas').classList.toggle('hidden', t !== 'cuentas')
+  $('viewUsuarios').classList.toggle('hidden', t !== 'usuarios')
+  $('tabCuentas').classList.toggle('active', t === 'cuentas')
+  $('tabUsuarios').classList.toggle('active', t === 'usuarios')
+}
+
+// ---------- Administración de usuarios ----------
+async function cargarUsuarios() {
+  const { data, error } = await supabase.from('perfiles').select('*').order('created_at', { ascending: false })
+  if (error) {
+    $('usersList').innerHTML = `<li class="empty">No se pudieron cargar los usuarios: ${esc(error.message)}</li>`
+    return
+  }
+  usuarios = data
+  const pend = usuarios.filter((u) => u.estado === 'pendiente').length
+  $('pendCount').textContent = pend
+  $('pendCount').classList.toggle('hidden', pend === 0)
+  $('usersList').innerHTML = usuarios.map((u) => {
+    const btn = (estado, txt, cls = '') => `<button class="btn ${cls} sm" data-uid="${u.id}" data-estado="${estado}">${txt}</button>`
+    let acts = ''
+    if (u.id === yo.id) acts = '<small>Tú</small>'
+    else if (u.estado === 'pendiente') acts = btn('aprobado', 'Aprobar') + btn('deshabilitado', 'Rechazar', 'danger')
+    else if (u.estado === 'aprobado') acts = btn('deshabilitado', 'Deshabilitar', 'danger')
+    else acts = btn('aprobado', 'Habilitar')
+    return `<li class="row"><div><b>${esc(u.email)}</b>
+      <small>${u.rol === 'admin' ? 'Administrador' : 'Usuario'} · ${new Date(u.created_at).toLocaleDateString('es')}</small>
+      <span class="pill ${u.estado}">${u.estado}</span></div><div class="acts">${acts}</div></li>`
+  }).join('')
+}
+
+async function cambiarEstado(uid, estado) {
+  const { error } = await supabase.from('perfiles').update({ estado }).eq('id', uid)
+  if (error) return alert('No se pudo actualizar: ' + error.message)
+  await cargarUsuarios()
 }
 
 // ---------- Mantenimiento de cuentas ----------
@@ -132,6 +196,12 @@ $('authBtn').onclick = submitAuth
 $('authForm').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAuth() })
 $('toggleBtn').onclick = () => setMode(mode === 'login' ? 'register' : 'login')
 $('logout').onclick = () => supabase.auth.signOut()
+$('pendLogout').onclick = () => supabase.auth.signOut()
+$('recheck').onclick = async () => {
+  const { data } = await supabase.auth.getSession()
+  onSession(data.session)
+}
+document.querySelectorAll('.tab').forEach((b) => (b.onclick = () => setTab(b.dataset.tab)))
 $('newAcc').onclick = () => openDlg()
 $('dlgCancel').onclick = () => $('dlg').close()
 $('dlgSave').onclick = saveAcc
@@ -139,5 +209,12 @@ $('list').onclick = (e) => {
   if (e.target.dataset.edit) openDlg(e.target.dataset.edit)
   if (e.target.dataset.del) deleteAcc(e.target.dataset.del)
 }
+$('usersList').onclick = (e) => {
+  const { uid, estado } = e.target.dataset
+  if (uid && estado) cambiarEstado(uid, estado)
+}
 
-supabase.auth.onAuthStateChange((_evt, session) => { onSession(session) })
+supabase.auth.onAuthStateChange((_evt, session) => {
+  if (session && yo && session.user.id === yo.id) return // evita recargar en renovaciones de token
+  setTimeout(() => onSession(session), 0) // evita bloqueos de supabase-js dentro del callback
+})

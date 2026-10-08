@@ -40,3 +40,8 @@ git push -u origin main
 ## Seguridad
 - La clave `anon` es pública por diseño; la protección real son las políticas RLS de `schema.sql`.
 - Nunca subas la clave `service_role` ni el archivo `.env` al repositorio.
+
+## Aprobación de usuarios (migración 02)
+1. Ejecuta `supabase/migracion_02_aprobacion.sql` en el SQL Editor (cambia el correo del administrador al final del archivo si hace falta).
+2. Los usuarios nuevos quedan **pendientes** hasta que un administrador los apruebe en la pestaña **Usuarios**.
+3. Un administrador no puede modificar su propio estado; así nunca se bloquea a sí mismo.
