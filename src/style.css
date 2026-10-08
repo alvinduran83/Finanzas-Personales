@@ -59,3 +59,7 @@ dialog::backdrop{background:rgba(4,18,48,.6)}
 dialog h2{font-size:1.3rem}
 .dlgacts{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .hidden{display:none!important}
+.bar input{width:auto;color:var(--ink)}
+.bar .acts{gap:8px}
+.bal.in{color:var(--ok)}
+.tabs{flex-wrap:wrap}

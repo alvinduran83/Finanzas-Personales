@@ -45,3 +45,15 @@ git push -u origin main
 1. Ejecuta `supabase/migracion_02_aprobacion.sql` en el SQL Editor (cambia el correo del administrador al final del archivo si hace falta).
 2. Los usuarios nuevos quedan **pendientes** hasta que un administrador los apruebe en la pestaña **Usuarios**.
 3. Un administrador no puede modificar su propio estado; así nunca se bloquea a sí mismo.
+
+## Gastos y conceptos (migración 03)
+1. Ejecuta `supabase/migracion_03_gastos.sql` en el SQL Editor.
+2. Pestaña **Conceptos**: maestro editable (agregar, renombrar, activar/desactivar, eliminar). Un concepto con gastos no se elimina; se desactiva.
+3. Pestaña **Gastos**: registro con fecha, concepto, cuenta de pago, monto y nota, filtrado por mes.
+4. El saldo de cada cuenta pasa a ser: saldo inicial menos sus gastos (vista `cuentas_con_saldo`).
+
+## Ingresos (migración 04)
+1. Ejecuta `supabase/migracion_04_ingresos.sql` en el SQL Editor.
+2. El maestro de **Conceptos** ahora tiene dos listas: *De gastos* y *De ingresos* (Sueldo, Honorarios, Ventas, etc.).
+3. Pestaña **Ingresos**: fecha, concepto, cuenta que recibe, monto y nota, filtrado por mes.
+4. Saldo de cada cuenta = saldo inicial + ingresos - gastos.

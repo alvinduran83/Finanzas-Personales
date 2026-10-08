@@ -48,11 +48,56 @@
   </header>
 
   <nav class="tabs">
+    <button class="tab" id="tabGastos" data-tab="gastos">Gastos</button>
+    <button class="tab" id="tabIngresos" data-tab="ingresos">Ingresos</button>
     <button class="tab" id="tabCuentas" data-tab="cuentas">Cuentas</button>
+    <button class="tab" id="tabConceptos" data-tab="conceptos">Conceptos</button>
     <button class="tab hidden" id="tabUsuarios" data-tab="usuarios">Usuarios <span class="badge hidden" id="pendCount">0</span></button>
   </nav>
 
-  <section id="viewCuentas">
+  <section id="viewGastos">
+    <div class="card total">
+      <small>Gastos del mes</small>
+      <strong id="totalGastos">0,00</strong>
+    </div>
+    <div class="bar">
+      <h2>Gastos</h2>
+      <div class="acts">
+        <input type="month" id="mes" aria-label="Mes">
+        <button class="btn" id="newGasto">Nuevo gasto</button>
+      </div>
+    </div>
+    <ul class="list" id="gastosList"></ul>
+  </section>
+
+  <section id="viewIngresos" class="hidden">
+    <div class="card total">
+      <small>Ingresos del mes</small>
+      <strong id="totalIngresos">0,00</strong>
+    </div>
+    <div class="bar">
+      <h2>Ingresos</h2>
+      <div class="acts">
+        <input type="month" id="mesI" aria-label="Mes">
+        <button class="btn" id="newIngreso">Nuevo ingreso</button>
+      </div>
+    </div>
+    <ul class="list" id="ingresosList"></ul>
+  </section>
+
+  <section id="viewConceptos" class="hidden">
+    <div class="bar">
+      <h2>Conceptos</h2>
+      <button class="btn" id="newConcepto">Nuevo concepto</button>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" id="cTipoGasto">De gastos</button>
+      <button class="tab" id="cTipoIngreso">De ingresos</button>
+    </nav>
+    <ul class="list" id="conceptosList"></ul>
+  </section>
+
+  <section id="viewCuentas" class="hidden">
     <div class="card total">
       <small>Saldo total en tus cuentas</small>
       <strong id="total">0,00</strong>
@@ -85,6 +130,53 @@
   <div class="dlgacts">
     <button class="btn ghost" id="dlgCancel">Cancelar</button>
     <button class="btn" id="dlgSave">Guardar cuenta</button>
+  </div>
+</dialog>
+<dialog id="dlgG">
+  <h2 id="gTitle">Nuevo gasto</h2>
+  <label for="gFecha">Fecha</label>
+  <input id="gFecha" type="date">
+  <label for="gConcepto">Concepto</label>
+  <select id="gConcepto"></select>
+  <label for="gCuenta">Cuenta de pago</label>
+  <select id="gCuenta"></select>
+  <label for="gMonto">Monto</label>
+  <input id="gMonto" type="number" step="0.01" min="0.01" inputmode="decimal">
+  <label for="gNota">Nota (opcional)</label>
+  <input id="gNota" maxlength="120">
+  <div class="err" id="gErr" role="alert"></div>
+  <div class="dlgacts">
+    <button class="btn ghost" id="gCancel">Cancelar</button>
+    <button class="btn" id="gSave">Guardar gasto</button>
+  </div>
+</dialog>
+
+<dialog id="dlgC">
+  <h2 id="cTitle">Nuevo concepto</h2>
+  <label for="cNombre">Nombre</label>
+  <input id="cNombre" placeholder="Ej. Luz, Internet, Pasajes" maxlength="60">
+  <div class="err" id="cErr" role="alert"></div>
+  <div class="dlgacts">
+    <button class="btn ghost" id="cCancel">Cancelar</button>
+    <button class="btn" id="cSave">Guardar concepto</button>
+  </div>
+</dialog>
+<dialog id="dlgI">
+  <h2 id="iTitle">Nuevo ingreso</h2>
+  <label for="iFecha">Fecha</label>
+  <input id="iFecha" type="date">
+  <label for="iConcepto">Concepto</label>
+  <select id="iConcepto"></select>
+  <label for="iCuenta">Cuenta que recibe</label>
+  <select id="iCuenta"></select>
+  <label for="iMonto">Monto</label>
+  <input id="iMonto" type="number" step="0.01" min="0.01" inputmode="decimal">
+  <label for="iNota">Nota (opcional)</label>
+  <input id="iNota" maxlength="120">
+  <div class="err" id="iErr" role="alert"></div>
+  <div class="dlgacts">
+    <button class="btn ghost" id="iCancel">Cancelar</button>
+    <button class="btn" id="iSave">Guardar ingreso</button>
   </div>
 </dialog>
 <script type="module" src="/src/main.js"></script>

@@ -1,5 +1,7 @@
 import './style.css'
 import { supabase } from './supabase.js'
+import { initGastos, cargarConceptos, cargarGastos, getConceptos } from './gastos.js'
+import { initIngresos, cargarIngresos } from './ingresos.js'
 
 const $ = (id) => document.getElementById(id)
 const money = (n) => new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
@@ -88,16 +90,18 @@ async function onSession(session) {
   $('who').textContent = 'Sesión de ' + yo.email + (admin ? ' · Administrador' : '')
   $('tabUsuarios').classList.toggle('hidden', !admin)
   show('app')
-  setTab('cuentas')
+  setTab('gastos')
   await cargarCuentas()
+  await Promise.all([cargarConceptos(), cargarGastos(), cargarIngresos()])
   if (admin) await cargarUsuarios()
 }
 
 function setTab(t) {
-  $('viewCuentas').classList.toggle('hidden', t !== 'cuentas')
-  $('viewUsuarios').classList.toggle('hidden', t !== 'usuarios')
-  $('tabCuentas').classList.toggle('active', t === 'cuentas')
-  $('tabUsuarios').classList.toggle('active', t === 'usuarios')
+  ;['gastos', 'ingresos', 'cuentas', 'conceptos', 'usuarios'].forEach((n) => {
+    const N = n[0].toUpperCase() + n.slice(1)
+    $('view' + N).classList.toggle('hidden', t !== n)
+    $('tab' + N).classList.toggle('active', t === n)
+  })
 }
 
 // ---------- Administración de usuarios ----------
@@ -132,7 +136,7 @@ async function cambiarEstado(uid, estado) {
 
 // ---------- Mantenimiento de cuentas ----------
 async function cargarCuentas() {
-  const { data, error } = await supabase.from('cuentas').select('*').order('created_at')
+  const { data, error } = await supabase.from('cuentas_con_saldo').select('*').order('created_at')
   if (error) {
     $('list').innerHTML = `<li class="empty">No se pudieron cargar las cuentas: ${esc(error.message)}</li>`
     return
@@ -142,11 +146,11 @@ async function cargarCuentas() {
 }
 
 function render() {
-  $('total').textContent = money(cuentas.reduce((s, a) => s + Number(a.saldo_inicial), 0))
+  $('total').textContent = money(cuentas.reduce((s, a) => s + Number(a.saldo), 0))
   $('list').innerHTML = cuentas.length
     ? cuentas.map((a) => `
-      <li class="row"><div><b>${esc(a.nombre)}</b><small>${esc(a.tipo)}</small></div>
-      <div class="acts"><span class="bal">${money(Number(a.saldo_inicial))}</span>
+      <li class="row"><div><b>${esc(a.nombre)}</b><small>${esc(a.tipo)} · Inicial ${money(Number(a.saldo_inicial))}</small></div>
+      <div class="acts"><span class="bal">${money(Number(a.saldo))}</span>
       <button class="btn ghost sm" data-edit="${a.id}">Editar</button>
       <button class="btn danger sm" data-del="${a.id}">Eliminar</button></div></li>`).join('')
     : '<li class="empty">Aún no tienes cuentas. Crea la primera, por ejemplo “Cuenta de Ahorro”.</li>'
@@ -187,7 +191,11 @@ async function deleteAcc(id) {
   const a = cuentas.find((x) => x.id === id)
   if (!a || !confirm(`¿Eliminar la cuenta “${a.nombre}”?`)) return
   const { error } = await supabase.from('cuentas').delete().eq('id', id)
-  if (error) return alert('No se pudo eliminar: ' + error.message)
+  if (error) {
+    return alert(error.code === '23503'
+      ? 'Esta cuenta tiene movimientos (gastos o ingresos) registrados y no se puede eliminar.'
+      : 'No se pudo eliminar: ' + error.message)
+  }
   await cargarCuentas()
 }
 
@@ -201,7 +209,7 @@ $('recheck').onclick = async () => {
   const { data } = await supabase.auth.getSession()
   onSession(data.session)
 }
-document.querySelectorAll('.tab').forEach((b) => (b.onclick = () => setTab(b.dataset.tab)))
+document.querySelectorAll('.tab[data-tab]').forEach((b) => (b.onclick = () => setTab(b.dataset.tab)))
 $('newAcc').onclick = () => openDlg()
 $('dlgCancel').onclick = () => $('dlg').close()
 $('dlgSave').onclick = saveAcc
@@ -213,6 +221,9 @@ $('usersList').onclick = (e) => {
   const { uid, estado } = e.target.dataset
   if (uid && estado) cambiarEstado(uid, estado)
 }
+
+initGastos({ cuentas: () => cuentas, recargarCuentas: cargarCuentas, recargarIngresos: cargarIngresos })
+initIngresos({ cuentas: () => cuentas, conceptos: getConceptos, recargarCuentas: cargarCuentas })
 
 supabase.auth.onAuthStateChange((_evt, session) => {
   if (session && yo && session.user.id === yo.id) return // evita recargar en renovaciones de token
