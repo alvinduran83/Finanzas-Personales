@@ -31,7 +31,7 @@ export async function cargarIngresos() {
   $('ingresosList').innerHTML = ingresos.length
     ? ingresos.map((g) => `
       <li class="row"><div><b>${esc(g.conceptos?.nombre ?? '—')}</b>
-      <small>${fmtFecha(g.fecha)} · ${esc(g.cuentas?.nombre ?? '—')}${g.nota ? ' · ' + esc(g.nota) : ''}</small></div>
+      <small>${fmtFecha(g.fecha)} · ${esc(g.cuentas?.nombre ?? '—')}${g.nota ? ' · ' + esc(g.nota) : ''}${g.grupo_id ? ' · distribuido' : ''}</small></div>
       <div class="acts"><span class="bal in">+ ${money(Number(g.monto))}</span>
       <button class="btn ghost sm" data-iedit="${g.id}">Editar</button>
       <button class="btn danger sm" data-idel="${g.id}">Eliminar</button></div></li>`).join('')
@@ -87,8 +87,13 @@ async function saveIngreso() {
 }
 
 async function deleteIngreso(id) {
-  if (!confirm('¿Eliminar este ingreso?')) return
-  const { error } = await supabase.from('ingresos').delete().eq('id', id)
+  const grupo = ingresos.find((x) => x.id === id)?.grupo_id
+  const msg = grupo
+    ? 'Este ingreso es parte de una distribución entre cuentas. Se eliminarán todas sus partes. ¿Continuar?'
+    : '¿Eliminar este ingreso?'
+  if (!confirm(msg)) return
+  const q = supabase.from('ingresos').delete()
+  const { error } = await (grupo ? q.eq('grupo_id', grupo) : q.eq('id', id))
   if (error) return alert('No se pudo eliminar: ' + error.message)
   await Promise.all([cargarIngresos(), ctx.recargarCuentas()])
 }

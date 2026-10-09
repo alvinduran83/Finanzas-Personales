@@ -63,3 +63,12 @@ dialog h2{font-size:1.3rem}
 .bar .acts{gap:8px}
 .bal.in{color:var(--ok)}
 .tabs{flex-wrap:wrap}
+.bar .btn.ghost{color:#fff;border-color:rgba(255,255,255,.5)}
+.bar .btn.ghost:hover{background:rgba(255,255,255,.12)}
+#dlgD{width:min(560px,calc(100% - 32px))}
+.drow{display:grid;grid-template-columns:1fr 88px 96px;gap:8px;align-items:center;margin-top:8px}
+.drow small{display:block;color:var(--muted)}
+.drow .dm{text-align:right;font-weight:600}
+.dtotal{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-weight:600}
+.dtotal .bad{color:var(--danger)}.dtotal .good{color:var(--ok)}
+.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}

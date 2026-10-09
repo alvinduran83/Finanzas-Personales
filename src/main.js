@@ -2,6 +2,7 @@ import './style.css'
 import { supabase } from './supabase.js'
 import { initGastos, cargarConceptos, cargarGastos, getConceptos } from './gastos.js'
 import { initIngresos, cargarIngresos } from './ingresos.js'
+import { initDistribucion } from './distribucion.js'
 
 const $ = (id) => document.getElementById(id)
 const money = (n) => new Intl.NumberFormat('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
@@ -224,6 +225,7 @@ $('usersList').onclick = (e) => {
 
 initGastos({ cuentas: () => cuentas, recargarCuentas: cargarCuentas, recargarIngresos: cargarIngresos })
 initIngresos({ cuentas: () => cuentas, conceptos: getConceptos, recargarCuentas: cargarCuentas })
+initDistribucion({ cuentas: () => cuentas, conceptos: getConceptos, recargarCuentas: cargarCuentas, recargarIngresos: cargarIngresos })
 
 supabase.auth.onAuthStateChange((_evt, session) => {
   if (session && yo && session.user.id === yo.id) return // evita recargar en renovaciones de token

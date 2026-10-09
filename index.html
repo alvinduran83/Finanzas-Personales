@@ -79,6 +79,7 @@
       <h2>Ingresos</h2>
       <div class="acts">
         <input type="month" id="mesI" aria-label="Mes">
+        <button class="btn ghost" id="newDistrib">Distribuir ingreso</button>
         <button class="btn" id="newIngreso">Nuevo ingreso</button>
       </div>
     </div>
@@ -177,6 +178,27 @@
   <div class="dlgacts">
     <button class="btn ghost" id="iCancel">Cancelar</button>
     <button class="btn" id="iSave">Guardar ingreso</button>
+  </div>
+</dialog>
+<dialog id="dlgD">
+  <h2>Distribuir ingreso</h2>
+  <p class="muted" style="margin:6px 0 0">Divide un monto global entre tus cuentas según porcentajes.</p>
+  <label for="dFecha">Fecha</label>
+  <input id="dFecha" type="date">
+  <label for="dConcepto">Concepto</label>
+  <select id="dConcepto"></select>
+  <label for="dMonto">Monto global</label>
+  <input id="dMonto" type="number" step="0.01" min="0.01" inputmode="decimal">
+  <label for="dNota">Nota (opcional)</label>
+  <input id="dNota" maxlength="120">
+  <label>Porcentaje por cuenta</label>
+  <div id="dList"></div>
+  <div class="dtotal"><span id="dTotal"></span><button class="link" id="dAjustar" type="button">Ajustar a 100%</button></div>
+  <label class="chk"><input type="checkbox" id="dGuardar"> Guardar estos porcentajes como predeterminados</label>
+  <div class="err" id="dErr" role="alert"></div>
+  <div class="dlgacts">
+    <button class="btn ghost" id="dCancel">Cancelar</button>
+    <button class="btn" id="dSave">Registrar distribución</button>
   </div>
 </dialog>
 <script type="module" src="/src/main.js"></script>

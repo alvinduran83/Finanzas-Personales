@@ -57,3 +57,9 @@ git push -u origin main
 2. El maestro de **Conceptos** ahora tiene dos listas: *De gastos* y *De ingresos* (Sueldo, Honorarios, Ventas, etc.).
 3. Pestaña **Ingresos**: fecha, concepto, cuenta que recibe, monto y nota, filtrado por mes.
 4. Saldo de cada cuenta = saldo inicial + ingresos - gastos.
+
+## Distribución de ingresos (migración 05)
+1. Ejecuta `supabase/migracion_05_distribucion.sql` en el SQL Editor.
+2. En **Ingresos > Distribuir ingreso** se divide un monto global entre las cuentas. Por defecto: Pagos 68%, Ahorro 2%, Inversiones 5%, Tarjeta de crédito 15% y Efectivo 10% (aplicado a la primera cuenta de cada tipo).
+3. Los porcentajes se pueden editar en el momento y, con la casilla correspondiente, guardarse como predeterminados por cuenta.
+4. Las partes quedan agrupadas (`grupo_id`); al eliminar una, se elimina toda la distribución.
